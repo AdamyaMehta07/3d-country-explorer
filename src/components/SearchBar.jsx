@@ -14,6 +14,9 @@ function SearchBar({ setCountryPosition }) {
       const lat = res.data[0].latlng[0];
       const lng = res.data[0].latlng[1];
 
+      console.log("LAT:", lat);
+      console.log("LNG:", lng);
+
       setCountryPosition({ lat, lng });
 
       console.log(res.data[0]);

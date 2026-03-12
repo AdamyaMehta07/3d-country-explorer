@@ -4,7 +4,7 @@ import { TextureLoader } from "three";
 import { useRef, useState } from "react";
 import Marker from "./Marker";
 import SearchBar from "./SearchBar";
-
+import CameraController from "./CameraController";
 
 function latLngToVector3(lat, lng, radius = 2) {
   const phi = (90 - lat) * (Math.PI / 180);
@@ -17,18 +17,13 @@ function latLngToVector3(lat, lng, radius = 2) {
   return [x, y, z];
 }
 
+function Earth({ markerPosition }) {
 
-
-function Earth() {
   const earthRef = useRef();
   const cloudRef = useRef();
 
-  
-
   const earthTexture = useLoader(TextureLoader, "/textures/earth.jpg");
   const cloudTexture = useLoader(TextureLoader, "/textures/clouds.png");
-
-  const indiaPosition = latLngToVector3(20.5937, 78.9629);
 
   useFrame(() => {
     earthRef.current.rotation.y += 0.0015;
@@ -36,16 +31,15 @@ function Earth() {
   });
 
   return (
-    <>
+    <group ref={earthRef}>
+
       {/* Earth */}
-      
-      <mesh ref={earthRef}>
+      <mesh>
         <sphereGeometry args={[2, 64, 64]} />
         <meshStandardMaterial map={earthTexture} />
-        <Marker position={indiaPosition} />
       </mesh>
 
-      {/* Cloud Layer */}
+      {/* Clouds */}
       <mesh ref={cloudRef}>
         <sphereGeometry args={[2.03, 64, 64]} />
         <meshStandardMaterial
@@ -55,40 +49,49 @@ function Earth() {
         />
       </mesh>
 
-       
-    </>
+      {/* Marker */}
+      {markerPosition && <Marker position={markerPosition} />}
+
+    </group>
   );
 }
 
 function Globe() {
+
   const [countryPosition, setCountryPosition] = useState(null);
+
   let markerPosition = null;
 
-if (countryPosition) {
-  markerPosition = latLngToVector3(
-    countryPosition.lat,
-    countryPosition.lng
-  );
-}
+  if (countryPosition) {
+    markerPosition = latLngToVector3(
+      countryPosition.lat,
+      countryPosition.lng
+    );
+  }
+
   return (
     <>
-     <SearchBar setCountryPosition={setCountryPosition} />
-    <Canvas camera={{ position: [0, 0, 6] }}>
-      {/* Lights */}
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[5, 3, 5]} intensity={1.5} />
+      <SearchBar setCountryPosition={setCountryPosition} />
 
-      {/* Stars */}
-      <Stars radius={100} depth={50} count={6000} factor={4} />
+      <Canvas camera={{ position: [0, 0, 6] }}>
 
-      {/* Earth */}
-      <Earth />
-      {markerPosition && <Marker position={markerPosition} />}
+        {/* Lights */}
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[5, 3, 5]} intensity={1.5} />
 
-      {/* Camera controls */}
-      <OrbitControls enableZoom />
-    </Canvas>
+        {/* Stars */}
+        <Stars radius={100} depth={50} count={6000} factor={4} />
 
+        {/* Earth */}
+        <Earth markerPosition={markerPosition} />
+
+        {/* Camera */}
+        <CameraController target={markerPosition} />
+
+        {/* Controls */}
+        <OrbitControls enableZoom />
+
+      </Canvas>
     </>
   );
 }
