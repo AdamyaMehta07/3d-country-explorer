@@ -1,8 +1,10 @@
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, Stars } from "@react-three/drei";
 import { TextureLoader } from "three";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Marker from "./Marker";
+import SearchBar from "./SearchBar";
+
 
 function latLngToVector3(lat, lng, radius = 2) {
   const phi = (90 - lat) * (Math.PI / 180);
@@ -59,7 +61,18 @@ function Earth() {
 }
 
 function Globe() {
+  const [countryPosition, setCountryPosition] = useState(null);
+  let markerPosition = null;
+
+if (countryPosition) {
+  markerPosition = latLngToVector3(
+    countryPosition.lat,
+    countryPosition.lng
+  );
+}
   return (
+    <>
+     <SearchBar setCountryPosition={setCountryPosition} />
     <Canvas camera={{ position: [0, 0, 6] }}>
       {/* Lights */}
       <ambientLight intensity={0.7} />
@@ -70,10 +83,13 @@ function Globe() {
 
       {/* Earth */}
       <Earth />
+      {markerPosition && <Marker position={markerPosition} />}
 
       {/* Camera controls */}
       <OrbitControls enableZoom />
     </Canvas>
+
+    </>
   );
 }
 
